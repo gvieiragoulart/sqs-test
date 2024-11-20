@@ -2,6 +2,7 @@
 
 namespace App\Http\Services;
 
+use App\DTO\Sqs\Message\MessageDTO;
 use Aws\Sqs\SqsClient;
 
 class SqsService {
@@ -18,6 +19,28 @@ class SqsService {
 
     public function sendMessage(MessageDTO $messageDto): void 
     {
+        $messageDto = $messageDto->all();
 
+        $args = [
+            'DelaySeconds' => $messageDto["delaySeconds"],
+            'MessageAttributes' => [
+                "Title" => [
+                    'DataType' => "String",
+                    'StringValue' => $messageDto["title"]
+                ],
+                "Author" => [
+                    'DataType' => "String",
+                    'StringValue' => $messageDto["author"]
+                ],
+                "WeeksOn" => [
+                    'DataType' => "Number",
+                    'StringValue' => $messageDto["weeksOn"]
+                ]
+            ],
+            'MessageBody' => $messageDto["body"],
+            'QueueUrl' => env("SQS_PREFIX")
+        ];
+
+        $this->client->sendMessage($args);
     }
 }

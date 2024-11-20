@@ -22,6 +22,7 @@ class CreateOrder implements ShouldQueue
      */
     public function handle(): void
     {
+        dd("a");
         var_dump("teste");
     }
 }

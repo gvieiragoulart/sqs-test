@@ -2,45 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\Sqs\Message\MessageDTO;
+use App\Http\Services\SqsService;
 use App\Jobs\CreateOrder;
 use Aws\Exception\AwsException;
-use Aws\Sqs\SqsClient;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
     public function store(Request $request)
     {
-
-        
-        $params = [
-            'DelaySeconds' => 10,
-            'MessageAttributes' => [
-                "Title" => [
-                    'DataType' => "String",
-                    'StringValue' => "The Hitchhiker's Guide to the Galaxy"
-                ],
-                "Author" => [
-                    'DataType' => "String",
-                    'StringValue' => "Douglas Adams."
-                ],
-                "WeeksOn" => [
-                    'DataType' => "Number",
-                    'StringValue' => "6"
-                ]
-            ],
-            'MessageBody' => "Information about current NY Times fiction bestseller for week of 12/11/2016.",
-            'QueueUrl' => env("SQS_PREFIX")
-        ];
-        
+        CreateOrder::dispatch();
         try {
-            $result = $client->sendMessage($params);
-            var_dump($result);
+            (new SqsService())->sendMessage(
+                new MessageDTO(
+                    delaySeconds: 10,
+                    title: "title",
+                    author: "me",
+                    weeksOn: 6,
+                    body: "body"
+                )
+            );
         } catch (AwsException $e) {
             // output error message if fails
             error_log($e->getMessage());
         }
-        
-        
     }
 }
